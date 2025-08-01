@@ -1,7 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-<<<<<<< HEAD
-*.py[codz]
+*.py[cod]
 *$py.class
 
 # C extensions
@@ -206,33 +205,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-=======
-*.py[cod]
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
-*.pyo
-
-# Virtual environments
-venv/
-ENV/
-env/
-.venv/
-
-# IDEs/editors
-.vscode/
-.idea/
-*.swp
 
 # OS files
 .DS_Store
 
-# Environment variables
-.env
-
-# Google service account credentials
-service_account.json 
->>>>>>> 6685462 (Initial project commit)
+# Google service account credentials - CRITICAL SECURITY
+*.json
+service_account.json
+*-a244eeb7b709.json
+spartan-rhino-434020-h1-a244eeb7b709.json
+credentials/
+secrets/

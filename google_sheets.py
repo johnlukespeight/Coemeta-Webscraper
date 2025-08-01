@@ -11,7 +11,8 @@ def get_gspread_client(service_account_path: str):
         gspread.Client: Authenticated gspread client.
     """
 
-    service_account_path = "/Users/nezamsp8/Developer/Coemeta WebScraper/spartan-rhino-434020-h1-a244eeb7b709.json"
+    # Use the provided service_account_path parameter instead of hardcoded path
+    # service_account_path = "/Users/nezamsp8/Developer/Coemeta WebScraper/spartan-rhino-434020-h1-a244eeb7b709.json"
 
     return gspread.service_account(filename=service_account_path)
 
