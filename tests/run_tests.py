@@ -44,6 +44,38 @@ def run_integration_tests():
     return result.wasSuccessful()
 
 
+def run_database_tests():
+    """Run database tests"""
+    print("\n🦆 Running Database Tests...")
+    print("=" * 50)
+
+    # Discover and run database tests
+    loader = unittest.TestLoader()
+    start_dir = os.path.join(os.path.dirname(__file__), "database")
+    suite = loader.discover(start_dir, pattern="test_*.py")
+
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+
+    return result.wasSuccessful()
+
+
+def run_utilities_tests():
+    """Run utilities tests"""
+    print("\n🔧 Running Utilities Tests...")
+    print("=" * 50)
+
+    # Discover and run utilities tests
+    loader = unittest.TestLoader()
+    start_dir = os.path.join(os.path.dirname(__file__), "utilities")
+    suite = loader.discover(start_dir, pattern="test_*.py")
+
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+
+    return result.wasSuccessful()
+
+
 def run_all_tests():
     """Run all tests"""
     print("🚀 Starting Test Suite for Coemeta WebScraper")
@@ -55,13 +87,23 @@ def run_all_tests():
     # Run integration tests
     integration_success = run_integration_tests()
 
+    # Run database tests
+    database_success = run_database_tests()
+
+    # Run utilities tests
+    utilities_success = run_utilities_tests()
+
     # Summary
     print("\n📊 Test Summary")
     print("=" * 30)
     print(f"Unit Tests: {'✅ PASSED' if unit_success else '❌ FAILED'}")
     print(f"Integration Tests: {'✅ PASSED' if integration_success else '❌ FAILED'}")
+    print(f"Database Tests: {'✅ PASSED' if database_success else '❌ FAILED'}")
+    print(f"Utilities Tests: {'✅ PASSED' if utilities_success else '❌ FAILED'}")
 
-    overall_success = unit_success and integration_success
+    overall_success = (
+        unit_success and integration_success and database_success and utilities_success
+    )
     print(
         f"\nOverall Result: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}"
     )

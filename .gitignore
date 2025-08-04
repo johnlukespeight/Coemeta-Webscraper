@@ -209,6 +209,12 @@ __marimo__/
 # OS files
 .DS_Store
 
+# Database files
+*.duckdb
+*.duckdb.backup*
+database/auction_data.duckdb
+database/test_auction_data.duckdb
+
 # Google service account credentials - CRITICAL SECURITY
 *.json
 service_account.json

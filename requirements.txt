@@ -6,3 +6,5 @@ streamlit
 pandas
 selenium
 webdriver-manager
+duckdb
+psutil

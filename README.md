@@ -112,6 +112,13 @@ python main.py
 - Interactive data tables
 - Download capabilities
 
+### 🦆 **Database Analytics**
+
+- DuckDB embedded database for fast analytics
+- SQL queries for data analysis
+- Price analytics and keyword statistics
+- Export functionality for data analysis
+
 ### 🔐 **Security**
 
 - Secure credential management
@@ -197,6 +204,29 @@ Or use the local file method (easier for development).
 
 - **write_results(sheet_id: str, keyword: str, results: list, client)**  
   Writes search results to the `RESULTS TEMPLATE` tab of the specified Google Sheet.
+
+### `database.py`
+
+- **AuctionDatabase**  
+  DuckDB database manager for auction data storage and analytics.
+
+- **insert_auction_results(keyword: str, results: List[Dict]) -> int**  
+  Inserts auction results into the database.
+
+- **get_auction_results() -> pd.DataFrame**  
+  Queries auction results with filtering options.
+
+- **get_keyword_stats() -> pd.DataFrame**  
+  Returns statistics for all keywords.
+
+- **get_price_analytics() -> Dict**  
+  Returns price analytics across all data.
+
+- **search_items(search_term: str) -> pd.DataFrame**  
+  Searches items by description.
+
+- **export_to_csv(filepath: str)**  
+  Exports data to CSV format.
 
 ### `utils.py`
 

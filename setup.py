@@ -224,6 +224,7 @@ def check_dependencies():
         "beautifulsoup4",
         "selenium",
         "webdriver-manager",
+        "duckdb",
     ]
 
     missing_packages = []
@@ -234,6 +235,8 @@ def check_dependencies():
                 __import__("google.auth")
             elif package == "beautifulsoup4":
                 __import__("bs4")
+            elif package == "duckdb":
+                __import__("duckdb")
             else:
                 __import__(package.replace("-", "_"))
             print(f"✅ {package}")

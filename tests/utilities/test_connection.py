@@ -3,7 +3,14 @@
 Simple test script to debug Google Sheets connection issues
 """
 
+import sys
 import os
+
+# Add the project root to the Python path
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
 import json
 from google_sheets import get_gspread_client, read_keywords
 

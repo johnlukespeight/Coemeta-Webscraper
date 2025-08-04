@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from google_sheets import get_gspread_client, write_results, read_keywords
 from scraper import scrape_auction_results
+from database.database import get_database, close_database
 from utils import (
     setup_logging,
     sanitize_keyword,
@@ -431,8 +432,14 @@ def main():
     display_stats()
 
     # Enhanced tabs with better styling
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["🔍 Single Search", "📋 Batch Processing", "📊 Results Viewer", "🛠️ Utilities"]
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        [
+            "🔍 Single Search",
+            "📋 Batch Processing",
+            "📊 Results Viewer",
+            "🦆 Database Analytics",
+            "🛠️ Utilities",
+        ]
     )
 
     with tab1:
@@ -487,6 +494,27 @@ def main():
                                 log_message(
                                     f"Found {len(results)} results for keyword: {keyword}"
                                 )
+
+                                # Save to database
+                                try:
+                                    db = get_database()
+                                    inserted_count = db.insert_auction_results(
+                                        keyword, results
+                                    )
+                                    st.info(
+                                        f"💾 Saved {inserted_count} results to database"
+                                    )
+                                    log_message(
+                                        f"Saved {inserted_count} results to database for keyword: {keyword}"
+                                    )
+                                except Exception as e:
+                                    st.warning(
+                                        f"⚠️ Could not save to database: {str(e)}"
+                                    )
+                                    log_message(
+                                        f"Database save failed for keyword {keyword}: {str(e)}",
+                                        "WARNING",
+                                    )
 
                                 # Display results in a beautiful table
                                 df = pd.DataFrame(results)
@@ -663,6 +691,21 @@ def main():
                                 search_cards.append(
                                     create_search_card(keyword, len(results), avg_price)
                                 )
+
+                                # Save to database
+                                try:
+                                    db = get_database()
+                                    inserted_count = db.insert_auction_results(
+                                        keyword, results
+                                    )
+                                    log_message(
+                                        f"Saved {inserted_count} results to database for keyword: {keyword}"
+                                    )
+                                except Exception as e:
+                                    log_message(
+                                        f"Database save failed for keyword {keyword}: {str(e)}",
+                                        "WARNING",
+                                    )
 
                                 log_message(
                                     f"Processed keyword '{keyword}': {len(results)} results"
@@ -977,6 +1020,117 @@ def main():
             )
 
     with tab4:
+        st.markdown(
+            """
+            <div style="background: rgba(255, 255, 255, 0.95); padding: 2rem; border-radius: 15px; 
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                <h2 style="margin: 0 0 1rem 0; color: #333;">🦆 Database Analytics</h2>
+                <p style="margin: 0; color: #666;">Analyze stored auction data and generate insights</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        try:
+            db = get_database()
+
+            # Database Overview
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                stats = db.get_database_stats()
+                st.metric("Total Records", stats.get("total_records", 0))
+
+            with col2:
+                st.metric("Unique Keywords", stats.get("unique_keywords", 0))
+
+            with col3:
+                avg_price = stats.get("avg_price", 0)
+                st.metric("Avg Price", f"${avg_price:.2f}" if avg_price else "N/A")
+
+            with col4:
+                median_price = stats.get("median_price", 0)
+                st.metric(
+                    "Median Price", f"${median_price:.2f}" if median_price else "N/A"
+                )
+
+            # Analytics Sections
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                st.subheader("📊 Keyword Statistics")
+                keyword_stats = db.get_keyword_stats()
+                if not keyword_stats.empty:
+                    st.dataframe(keyword_stats, use_container_width=True)
+                else:
+                    st.info(
+                        "No keyword data available yet. Run some searches to populate the database."
+                    )
+
+            with col2:
+                st.subheader("🔍 Quick Search")
+                search_term = st.text_input("Search items by description")
+                if search_term:
+                    results = db.search_items(search_term, limit=10)
+                    if not results.empty:
+                        st.dataframe(
+                            results[["keyword", "item_description", "current_price"]],
+                            use_container_width=True,
+                        )
+                    else:
+                        st.info("No items found matching your search.")
+
+            # Price Analytics
+            st.subheader("💰 Price Analytics")
+            price_stats = db.get_price_analytics()
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Min Price", f"${price_stats.get('min_price', 0):.2f}")
+            with col2:
+                st.metric("Max Price", f"${price_stats.get('max_price', 0):.2f}")
+            with col3:
+                st.metric("Total Items", price_stats.get("total_items", 0))
+
+            # Recent Activity
+            st.subheader("⏰ Recent Activity")
+            hours = st.slider("Hours to look back", 1, 168, 24)
+            recent_results = db.get_recent_results(hours)
+
+            if not recent_results.empty:
+                st.dataframe(
+                    recent_results[
+                        ["keyword", "item_description", "current_price", "scraped_at"]
+                    ],
+                    use_container_width=True,
+                )
+            else:
+                st.info(f"No activity in the last {hours} hours.")
+
+            # Export Options
+            st.subheader("📤 Export Data")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("Export All Data to CSV"):
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"auction_data_export_{timestamp}.csv"
+                    db.export_to_csv(filename)
+                    st.success(f"Data exported to {filename}")
+
+            with col2:
+                keyword_filter = st.text_input("Filter by keyword for export")
+                if keyword_filter and st.button("Export Filtered Data"):
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"auction_data_{keyword_filter}_{timestamp}.csv"
+                    db.export_to_csv(filename, keyword=keyword_filter)
+                    st.success(f"Filtered data exported to {filename}")
+
+        except Exception as e:
+            st.error(f"Database error: {str(e)}")
+            st.info("Make sure DuckDB is installed: pip install duckdb")
+
+    with tab5:
         st.markdown(
             """
             <div style="background: rgba(255, 255, 255, 0.95); padding: 2rem; border-radius: 15px; 

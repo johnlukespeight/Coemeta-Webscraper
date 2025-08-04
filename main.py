@@ -10,6 +10,85 @@ from utils import (
     format_date,
 )
 from config import get_service_account_path, get_sheet_id, validate_credentials
+import sys
+import subprocess
+import psutil
+from pathlib import Path
+
+
+def check_venv():
+    """Check if virtual environment is activated"""
+    return hasattr(sys, "real_prefix") or (
+        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
+    )
+
+
+def setup_environment():
+    """Setup virtual environment and install dependencies"""
+    venv_path = Path("venv")
+    if not venv_path.exists():
+        print("Creating virtual environment...")
+        subprocess.run([sys.executable, "-m", "venv", "venv"])
+        print("Virtual environment created.")
+
+    if not check_venv():
+        print("Please activate virtual environment:")
+        print("source venv/bin/activate")
+        return False
+
+    print("Installing dependencies...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+    print("Dependencies installed successfully!")
+    return True
+
+
+def kill_streamlit_processes():
+    """Kill any running Streamlit processes"""
+    killed = False
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+        try:
+            if proc.info["name"] and "streamlit" in proc.info["name"].lower():
+                print(f"Killing Streamlit process: {proc.info['pid']}")
+                proc.terminate()
+                killed = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+
+    if not killed:
+        print("No Streamlit processes found.")
+    else:
+        print("Streamlit processes terminated.")
+    return killed
+
+
+def clean_database():
+    """Clean up database connections"""
+    try:
+        from database.database import close_database
+
+        close_database()
+        print("Database connections closed.")
+    except ImportError:
+        print("Database module not available.")
+    except Exception as e:
+        print(f"Error closing database: {e}")
+
+
+def run_streamlit():
+    """Run Streamlit app with proper cleanup"""
+    if not check_venv():
+        print("Please activate virtual environment first:")
+        print("source venv/bin/activate")
+        return False
+
+    # Kill any existing Streamlit processes
+    kill_streamlit_processes()
+
+    # Clean database connections
+    clean_database()
+
+    print("Starting Streamlit app...")
+    subprocess.run([sys.executable, "-m", "streamlit", "run", "streamlit_app.py"])
 
 
 def main():
@@ -82,5 +161,31 @@ def main():
 
 
 if __name__ == "__main__":
-    # Run the main execution function
-    main()
+    # Check for command line arguments
+    if len(sys.argv) > 1:
+        command = sys.argv[1].lower()
+
+        if command == "setup":
+            setup_environment()
+        elif command == "streamlit":
+            run_streamlit()
+        elif command == "kill":
+            kill_streamlit_processes()
+        elif command == "clean":
+            clean_database()
+        elif command == "help":
+            print("Usage:")
+            print("  python main.py              - Run the web scraper")
+            print(
+                "  python main.py setup        - Setup virtual environment and install dependencies"
+            )
+            print("  python main.py streamlit    - Run Streamlit app with cleanup")
+            print("  python main.py kill         - Kill running Streamlit processes")
+            print("  python main.py clean        - Clean database connections")
+            print("  python main.py help         - Show this help message")
+        else:
+            print(f"Unknown command: {command}")
+            print("Use 'python main.py help' for usage information")
+    else:
+        # Run the main execution function
+        main()
