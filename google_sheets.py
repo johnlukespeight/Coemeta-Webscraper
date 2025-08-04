@@ -29,7 +29,7 @@ def read_keywords(sheet_id: str, client):
     # Open the Google Sheet by ID
     sheet = client.open_by_key(sheet_id)
     # Open the [KEYWORDS] worksheet/tab
-    worksheet = sheet.worksheet("KEYWORDS")
+    worksheet = sheet.worksheet("[KEYWORDS]")
     # Get all values in the first column (assume keywords are in column A)
     keywords = worksheet.col_values(1)
     # Optionally, remove header if present
