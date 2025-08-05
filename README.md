@@ -4,14 +4,14 @@
 
 **Coemeta WebScraper** is a Python project designed to automate the process of scraping auction results from [shopgoodwill.com](https://shopgoodwill.com) based on a list of keywords, and then write the results to a Google Sheet. The project uses Selenium for robust web scraping, BeautifulSoup for HTML parsing, and the `gspread` library for Google Sheets integration. It is modular, testable, and includes utility functions for data cleaning, logging, and formatting.
 
-The project now includes a **Streamlit web interface** for easy interaction and a **consolidated setup script** for seamless configuration.
+The project now includes a **Streamlit web interface** for easy interaction, **enhanced anti-bot capabilities**, **DuckDB database integration**, and a **consolidated setup script** for seamless configuration.
 
 ---
 
 ## Project Structure
 
 - `main.py`  
-  The main entry point. Orchestrates the workflow: authenticates with Google Sheets, reads keywords, scrapes auction results, and writes results back to the sheet. Also includes test functions for each module and a full pipeline test.
+  The main entry point with command-line interface. Orchestrates the workflow: authenticates with Google Sheets, reads keywords, scrapes auction results, and writes results back to the sheet. Also includes test functions for each module and a full pipeline test.
 
 - `streamlit_app.py`  
   **NEW**: Web interface built with Streamlit. Provides a user-friendly way to interact with all scraper functionality through a modern web UI.
@@ -20,16 +20,34 @@ The project now includes a **Streamlit web interface** for easy interaction and 
   **NEW**: Consolidated setup script that combines credential management, dependency checking, and comprehensive setup guidance.
 
 - `scraper.py`  
-  Contains the core scraping logic using Selenium and BeautifulSoup. Handles dynamic content, anti-bot measures, and flexible product extraction.
+  Contains the core scraping logic using Selenium and BeautifulSoup. Handles dynamic content, anti-bot measures, and flexible product extraction. **Enhanced with undetected-chromedriver and cloudscraper**.
 
 - `google_sheets.py`  
-  Handles authentication with Google Sheets, reading keywords from a sheet, and writing results to a results tab.
+  Handles authentication with Google Sheets, reading keywords from a sheet, and writing results to a results tab. **Now includes image integration**.
+
+- `database/database.py`  
+  **NEW**: DuckDB database manager for auction data storage and analytics.
 
 - `utils.py`  
   Provides utility functions for logging, data cleaning, keyword sanitization, price extraction, date formatting, and more.
 
 - `config.py`  
   Configuration management for service account paths and other settings.
+
+### Documentation
+
+- `docs/` - All project documentation
+  - `GOOGLE_SHEET_SETUP.md` - Google Sheets setup guide
+  - `SECURITY.md` - Security best practices
+  - `SETUP_SUMMARY.md` - Setup process summary
+
+### Tests
+
+- `tests/` - Test suite organization
+  - `tests/utilities/` - Utility test scripts
+  - `tests/database/` - Database test scripts
+  - `tests/unit/` - Unit tests
+  - `tests/integration/` - Integration tests
 
 ---
 
@@ -66,6 +84,32 @@ streamlit run streamlit_app.py
 
 Open your browser to the URL shown (usually `http://localhost:8501`)
 
+### 4. Run Tests
+
+```bash
+# Run all tests
+python main.py test
+
+# Run specific test categories
+python tests/run_tests.py
+```
+
+### 5. Command Line Interface
+
+```bash
+# Run scraper with keywords from Google Sheets
+python main.py
+
+# Run Streamlit interface
+python main.py streamlit
+
+# Run setup
+python main.py setup
+
+# Clean up database
+python main.py cleanup
+```
+
 ---
 
 ## Usage
@@ -78,6 +122,8 @@ The Streamlit interface provides:
 - **📋 Batch Processing**: Process multiple keywords from Google Sheets or manual input
 - **📊 Results Viewer**: View, filter, and analyze scraped results
 - **🛠️ Utilities**: Test utility functions like text cleaning and data validation
+- **🖼️ Image Integration**: View auction item images in the results
+- **📊 Database Analytics**: Access DuckDB analytics and statistics
 
 ### Command Line Interface
 
@@ -93,17 +139,21 @@ python main.py
 
 ### 🔍 **Web Scraping**
 
-- Robust scraping using Selenium with anti-bot measures
-- Dynamic content handling
-- Flexible product extraction
-- Error handling and retry logic
+- Robust scraping using Selenium with enhanced anti-bot measures
+- **NEW**: undetected-chromedriver and cloudscraper integration
+- Dynamic content handling with multiple fallback methods
+- Flexible product extraction with image URL detection
+- Error handling and retry logic with exponential backoff
+- Human behavior simulation to avoid detection
 
 ### 📊 **Data Management**
 
-- Google Sheets integration
+- Google Sheets integration with **image insertion**
 - CSV export functionality
 - Data validation and cleaning
 - Comprehensive logging
+- **NEW**: DuckDB database for fast analytics
+- **NEW**: SQL queries for data analysis and statistics
 
 ### 🎨 **User Interface**
 
@@ -118,12 +168,16 @@ python main.py
 - SQL queries for data analysis
 - Price analytics and keyword statistics
 - Export functionality for data analysis
+- **NEW**: Thread-safe database operations
+- **NEW**: Automatic database management and cleanup
 
 ### 🔐 **Security**
 
 - Secure credential management
 - Environment variable support
 - .gitignore protection for sensitive files
+- **NEW**: Enhanced security documentation in `docs/SECURITY.md`
+- **NEW**: Comprehensive setup guides in `docs/` folder
 
 ---
 
@@ -184,12 +238,27 @@ Or use the local file method (easier for development).
 ### `main.py`
 
 - **main()**  
-  Main execution function for command-line operation.
+  Main execution function for command-line operation with multiple commands:
+
+  - `python main.py` - Run scraper with keywords from Google Sheets
+  - `python main.py streamlit` - Launch Streamlit interface
+  - `python main.py test` - Run all tests
+  - `python main.py setup` - Run setup script
+  - `python main.py cleanup` - Clean up database files
 
 - **test\_\*()**  
   Various test functions for each module.
 
 ### `scraper.py`
+
+- **AntiDetectionScraper**  
+  Enhanced scraper class with multiple anti-bot methods:
+
+  - undetected-chromedriver support
+  - cloudscraper fallback
+  - Human behavior simulation
+  - Captcha detection and handling
+  - Multiple retry strategies
 
 - **scrape_auction_results(keyword: str, max_results: int = 10) -> list**  
   Scrapes auction results from shopgoodwill.com for a given keyword.
@@ -203,15 +272,15 @@ Or use the local file method (easier for development).
   Reads keywords from the `[KEYWORDS]` tab of the specified Google Sheet.
 
 - **write_results(sheet_id: str, keyword: str, results: list, client)**  
-  Writes search results to the `RESULTS TEMPLATE` tab of the specified Google Sheet.
+  Writes search results to the `RESULTS TEMPLATE` tab of the specified Google Sheet with **image integration**.
 
-### `database.py`
+### `database/database.py`
 
 - **AuctionDatabase**  
-  DuckDB database manager for auction data storage and analytics.
+  DuckDB database manager for auction data storage and analytics with thread-safe operations.
 
 - **insert_auction_results(keyword: str, results: List[Dict]) -> int**  
-  Inserts auction results into the database.
+  Inserts auction results into the database with automatic cleanup.
 
 - **get_auction_results() -> pd.DataFrame**  
   Queries auction results with filtering options.
@@ -227,6 +296,9 @@ Or use the local file method (easier for development).
 
 - **export_to_csv(filepath: str)**  
   Exports data to CSV format.
+
+- **get_database_stats() -> Dict**  
+  Returns comprehensive database statistics.
 
 ### `utils.py`
 
@@ -278,14 +350,17 @@ Or use the local file method (easier for development).
    - Run `pip install -r requirements.txt`
 
 4. **"Web scraping blocked"**
-   - The scraper includes anti-bot measures
+   - The scraper includes enhanced anti-bot measures
    - Try again later or adjust scraping parameters
+   - Check if captcha solving is needed
 
 ### Getting Help
 
 - Check the activity logs in the Streamlit interface
 - Review the console output for detailed error messages
 - Ensure all setup steps were completed correctly
+- Check the `docs/` folder for detailed setup guides
+- Run `python main.py test` to verify all components
 
 ---
 
