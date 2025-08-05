@@ -495,6 +495,25 @@ def main():
                                     f"Found {len(results)} results for keyword: {keyword}"
                                 )
 
+                                # Write results to Google Sheets
+                                try:
+                                    client = get_gspread_client(service_account_path)
+                                    write_results(sheet_id, keyword, results, client)
+                                    st.success(
+                                        f"📊 Written {len(results)} results to Google Sheets"
+                                    )
+                                    log_message(
+                                        f"Written {len(results)} results to Google Sheets for keyword: {keyword}"
+                                    )
+                                except Exception as e:
+                                    st.warning(
+                                        f"⚠️ Could not write to Google Sheets: {str(e)}"
+                                    )
+                                    log_message(
+                                        f"Google Sheets write failed for keyword {keyword}: {str(e)}",
+                                        "WARNING",
+                                    )
+
                                 # Save to database
                                 try:
                                     db = get_database()
@@ -521,15 +540,47 @@ def main():
                                 st.markdown("### 📊 Search Results")
                                 st.dataframe(df, use_container_width=True)
 
-                                # Enhanced download button
-                                csv = df.to_csv(index=False)
-                                st.download_button(
-                                    label="📥 Download Results as CSV",
-                                    data=csv,
-                                    file_name=f"auction_results_{keyword}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                                    mime="text/csv",
-                                    use_container_width=True,
-                                )
+                                # Action buttons
+                                col1, col2 = st.columns(2)
+
+                                with col1:
+                                    # Enhanced download button
+                                    csv = df.to_csv(index=False)
+                                    st.download_button(
+                                        label="📥 Download Results as CSV",
+                                        data=csv,
+                                        file_name=f"auction_results_{keyword}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                        mime="text/csv",
+                                        use_container_width=True,
+                                    )
+
+                                with col2:
+                                    # Manual write to sheets button
+                                    if st.button(
+                                        "📊 Write to Google Sheets",
+                                        use_container_width=True,
+                                    ):
+                                        try:
+                                            client = get_gspread_client(
+                                                service_account_path
+                                            )
+                                            write_results(
+                                                sheet_id, keyword, results, client
+                                            )
+                                            st.success(
+                                                f"✅ Written {len(results)} results to Google Sheets"
+                                            )
+                                            log_message(
+                                                f"Manually written {len(results)} results to Google Sheets for keyword: {keyword}"
+                                            )
+                                        except Exception as e:
+                                            st.error(
+                                                f"❌ Failed to write to Google Sheets: {str(e)}"
+                                            )
+                                            log_message(
+                                                f"Manual Google Sheets write failed for keyword {keyword}: {str(e)}",
+                                                "ERROR",
+                                            )
                             else:
                                 st.session_state.stats["failed_searches"] += 1
                                 st.markdown(

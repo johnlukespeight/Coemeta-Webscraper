@@ -87,3 +87,19 @@ def write_results(sheet_id: str, keyword: str, results: list, client):
 
     # Write the data to the worksheet starting at A1
     worksheet.update("A1", data)
+
+    # Add images to column E (5th column) if image URLs are available
+    try:
+        for i, row in enumerate(results, start=2):  # Start from row 2 (after headers)
+            image_url = row.get("Auction image / thumbnail URL (extra credit)", "")
+            if image_url and image_url.strip():
+                try:
+                    # Insert image using cell update method
+                    worksheet.update_cell(i, 5, f'=IMAGE("{image_url}", 3, 100, 100)')
+                    print(f"✅ Added image to row {i}, column E: {image_url}")
+                except Exception as e:
+                    print(f"⚠️ Could not add image to row {i}, column E: {e}")
+                    # Fallback: just put the URL as text
+                    worksheet.update_cell(i, 5, image_url)
+    except Exception as e:
+        print(f"⚠️ Error adding images to sheet: {e}")

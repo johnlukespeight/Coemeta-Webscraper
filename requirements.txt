@@ -8,3 +8,5 @@ selenium
 webdriver-manager
 duckdb
 psutil
+undetected-chromedriver
+cloudscraper
