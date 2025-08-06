@@ -1,34 +1,75 @@
 #!/usr/bin/env python3
 """
-Integration tests for the auction scraper
-Tests actual web scraping functionality
+Integration tests for the auction scraper.
+
+This module contains integration tests for the scraper.py module,
+testing actual web scraping functionality against live websites.
+These tests verify that the scraper can connect to websites,
+handle multiple keywords, and return valid data.
+
+Note: These tests make actual network requests and may fail if
+the target website changes or implements stronger anti-bot measures.
 """
 
 import unittest
 import json
 import time
 import os
+from typing import Dict, List, Any, Optional, Union
+
 from scraper import scrape_auction_results
 from utils import validate_auction_data
 
 
 class TestScraperIntegration(unittest.TestCase):
-    """Integration tests for the scraper module"""
+    """Integration tests for the scraper module.
+    
+    This test suite performs integration tests against actual websites to verify
+    that the scraper can connect, retrieve data, and handle various scenarios
+    in a real-world environment.
+    
+    Attributes:
+        test_keywords: List of keywords to test with
+        max_results: Maximum number of results to request in tests
+        results_file: File to save test results for inspection
+    """
 
-    def setUp(self):
-        """Set up test fixtures"""
-        self.test_keywords = ["vintage", "antique"]
+    def setUp(self) -> None:
+        """Set up test fixtures before each test.
+        
+        This method initializes test data and configuration that will be
+        used across multiple test cases.
+        
+        Returns:
+            None
+        """
+        self.test_keywords = ["gore-tex", "Bape"]
         self.max_results = 2
         self.results_file = "integration_test_results.json"
 
-    def tearDown(self):
-        """Clean up after tests"""
+    def tearDown(self) -> None:
+        """Clean up after tests have run.
+        
+        This method removes any temporary files created during testing
+        to ensure a clean state for subsequent test runs.
+        
+        Returns:
+            None
+        """
         # Remove test results file if it exists
         if os.path.exists(self.results_file):
             os.remove(self.results_file)
 
-    def test_scraper_connects_to_website(self):
-        """Test that the scraper can connect to the target website"""
+    def test_scraper_connects_to_website(self) -> None:
+        """Test that the scraper can connect to the target website.
+        
+        This test verifies that the scraper can establish a connection to
+        the target website and retrieve at least some basic response,
+        even if it's a blocking message.
+        
+        Returns:
+            None
+        """
         print("\n🔍 Testing scraper connection to website...")
 
         keyword = "test"
@@ -44,8 +85,16 @@ class TestScraperIntegration(unittest.TestCase):
         except Exception as e:
             self.fail(f"Scraper failed to connect: {e}")
 
-    def test_scraper_handles_multiple_keywords(self):
-        """Test that the scraper can handle multiple keywords"""
+    def test_scraper_handles_multiple_keywords(self) -> None:
+        """Test that the scraper can handle multiple keywords.
+        
+        This test verifies that the scraper can process multiple different
+        keywords sequentially, saving the results to a file for inspection.
+        It ensures that at least some keywords return results.
+        
+        Returns:
+            None
+        """
         print("\n🔍 Testing scraper with multiple keywords...")
 
         all_results = {}
@@ -81,8 +130,16 @@ class TestScraperIntegration(unittest.TestCase):
         successful_keywords = sum(1 for results in all_results.values() if results)
         self.assertGreaterEqual(successful_keywords, 1)
 
-    def test_scraper_result_quality(self):
-        """Test the quality of scraper results"""
+    def test_scraper_result_quality(self) -> None:
+        """Test the quality of scraper results.
+        
+        This test verifies that the scraper returns results with the expected
+        structure and content. It checks for the presence of required fields
+        and distinguishes between actual results and blocking messages.
+        
+        Returns:
+            None
+        """
         print("\n🔍 Testing result quality...")
 
         keyword = "jewelry"  # Use a common keyword
@@ -116,8 +173,16 @@ class TestScraperIntegration(unittest.TestCase):
             print("⚠️  No actual results - likely blocked by website")
             print("   This is normal for modern websites with anti-bot protection")
 
-    def test_scraper_performance(self):
-        """Test scraper performance and timing"""
+    def test_scraper_performance(self) -> None:
+        """Test scraper performance and timing.
+        
+        This test measures the execution time of the scraper to ensure
+        it completes within a reasonable timeframe (less than 30 seconds).
+        It also verifies that results are returned.
+        
+        Returns:
+            None
+        """
         print("\n🔍 Testing scraper performance...")
 
         start_time = time.time()
@@ -135,8 +200,16 @@ class TestScraperIntegration(unittest.TestCase):
         self.assertIsInstance(results, list)
         self.assertGreaterEqual(len(results), 1)
 
-    def test_scraper_with_validation(self):
-        """Test scraper with data validation (from main.py test_scraper)"""
+    def test_scraper_with_validation(self) -> None:
+        """Test scraper with data validation.
+        
+        This test verifies that the scraper returns data that passes
+        validation checks using the validate_auction_data function.
+        It prints detailed information about each result for inspection.
+        
+        Returns:
+            None
+        """
         print("\n🔍 Testing scraper with data validation...")
 
         test_keyword = "gore-tex"

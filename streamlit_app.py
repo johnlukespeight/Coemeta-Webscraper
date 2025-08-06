@@ -1,8 +1,31 @@
+"""Streamlit web application for the Coemeta WebScraper.
+
+This module provides a modern, interactive web interface for the auction data scraper.
+It allows users to perform single keyword searches or batch processing, view and analyze
+results, interact with the database, and use various utility functions.
+
+The UI is designed with a modern, responsive layout featuring glassmorphism effects,
+gradient backgrounds, and animated components.
+
+Features:
+    - Single keyword search with real-time feedback
+    - Batch processing from Google Sheets or manual input
+    - Results viewer with filtering capabilities
+    - Database analytics dashboard
+    - Utility tools for testing data processing functions
+    - Real-time statistics and logging
+
+Typical usage:
+    streamlit run streamlit_app.py
+"""
+
 import streamlit as st
 import pandas as pd
 import time
 from datetime import datetime
 import os
+from typing import Dict, List, Optional, Any, Union, Tuple
+
 from google_sheets import get_gspread_client, write_results, read_keywords
 from scraper import scrape_auction_results
 from database.database import get_database, close_database
@@ -15,6 +38,8 @@ from utils import (
     extract_price,
     format_date,
 )
+from config import get_config
+from error_handling import handle_error, GoogleSheetsError, ScrapingError, DataError
 
 # Page configuration
 st.set_page_config(
@@ -226,8 +251,21 @@ st.markdown(
 )
 
 
-def initialize_session_state():
-    """Initialize session state variables"""
+def initialize_session_state() -> None:
+    """Initialize session state variables for the application.
+
+    This function sets up the initial state for the Streamlit application,
+    creating the necessary session state variables if they don't already exist.
+
+    Session state variables:
+        - results_data: List of dictionaries containing scraped auction results
+        - processing_status: Current processing status (idle, searching, batch_processing)
+        - logs: List of log messages with timestamps
+        - stats: Dictionary containing statistics about searches and results
+
+    Returns:
+        None
+    """
     if "results_data" not in st.session_state:
         st.session_state.results_data = []
     if "processing_status" not in st.session_state:
@@ -243,14 +281,35 @@ def initialize_session_state():
         }
 
 
-def log_message(message, level="INFO"):
-    """Add a message to the logs"""
+def log_message(message: str, level: str = "INFO") -> None:
+    """Add a message to the application logs with timestamp.
+
+    This function appends a formatted log message to the session state logs
+    with a timestamp and specified log level.
+
+    Args:
+        message: The message text to log
+        level: Log level (INFO, WARNING, ERROR, SUCCESS)
+
+    Returns:
+        None
+
+    Example:
+        log_message("Search completed successfully", "SUCCESS")
+    """
     timestamp = datetime.now().strftime("%H:%M:%S")
     st.session_state.logs.append(f"[{timestamp}] {level}: {message}")
 
 
-def display_logs():
-    """Display logs in a scrollable container"""
+def display_logs() -> None:
+    """Display application logs in a scrollable container with appropriate styling.
+
+    This function renders the most recent logs (up to 20) in an expandable container,
+    styling each log entry according to its level (ERROR, WARNING, SUCCESS, INFO).
+
+    Returns:
+        None
+    """
     if st.session_state.logs:
         with st.expander("📋 Activity Logs", expanded=False):
             log_container = st.container()
@@ -266,8 +325,22 @@ def display_logs():
                         st.info(log)
 
 
-def display_stats():
-    """Display statistics in a beautiful card layout"""
+def display_stats() -> None:
+    """Display application statistics in a beautiful card layout.
+
+    This function renders key statistics from the session state in a row of
+    metric cards with custom styling. Each card shows a different statistic
+    with an appropriate icon and color scheme.
+
+    Statistics displayed:
+        - Total searches performed
+        - Total results found across all searches
+        - Number of successful searches
+        - Number of failed searches
+
+    Returns:
+        None
+    """
     stats = st.session_state.stats
 
     col1, col2, col3, col4 = st.columns(4)
@@ -321,8 +394,27 @@ def display_stats():
         )
 
 
-def create_search_card(keyword, results_count, avg_price=None):
-    """Create a beautiful search result card"""
+def create_search_card(
+    keyword: str, results_count: int, avg_price: Optional[float] = None
+) -> str:
+    """Create a beautiful HTML card for displaying search result summaries.
+
+    This function generates HTML for a styled card that displays information
+    about a search result, including the keyword, number of results found,
+    and optionally the average price.
+
+    Args:
+        keyword: The search keyword
+        results_count: Number of results found for this keyword
+        avg_price: Optional average price of results, if available
+
+    Returns:
+        str: HTML string for the search result card
+
+    Example:
+        card_html = create_search_card("vintage watch", 15, 125.50)
+        st.markdown(card_html, unsafe_allow_html=True)
+    """
     card_html = f"""
     <div class="metric-card" style="margin: 1rem 0;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -348,7 +440,23 @@ def create_search_card(keyword, results_count, avg_price=None):
     return card_html
 
 
-def main():
+def main() -> None:
+    """Main function for the Streamlit application.
+
+    This function sets up the application layout, initializes the session state,
+    and renders all UI components including the header, sidebar, tabs, and
+    interactive elements.
+
+    The application is organized into tabs:
+        - Single Search: For searching individual keywords
+        - Batch Processing: For processing multiple keywords
+        - Results Viewer: For viewing and filtering results
+        - Database Analytics: For analyzing stored data
+        - Utilities: For testing data processing functions
+
+    Returns:
+        None
+    """
     # Enhanced header with gradient background
     st.markdown(
         """
