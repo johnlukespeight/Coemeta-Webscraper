@@ -12,7 +12,7 @@ sys.path.insert(
 )
 
 import pandas as pd
-from database.database import AuctionDatabase
+from backend.database.database import AuctionDatabase
 
 
 def test_duckdb_integration():

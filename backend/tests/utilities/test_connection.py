@@ -12,7 +12,7 @@ sys.path.insert(
 )
 
 import json
-from google_sheets import get_gspread_client, read_keywords
+from backend.google_sheets import get_gspread_client, read_keywords
 
 
 def test_connection():

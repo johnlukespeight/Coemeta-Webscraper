@@ -7,9 +7,11 @@ Run this from the project root for a simple test
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from scraper import scrape_auction_results
+from backend.scraper import scrape_auction_results
 import json
 
 

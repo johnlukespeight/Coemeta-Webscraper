@@ -9,8 +9,8 @@ import os
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from google_sheets import get_gspread_client, write_results
-from config import get_service_account_path, get_sheet_id
+from backend.google_sheets import get_gspread_client, write_results
+from backend.config import get_service_account_path, get_sheet_id
 
 
 def test_write_results():

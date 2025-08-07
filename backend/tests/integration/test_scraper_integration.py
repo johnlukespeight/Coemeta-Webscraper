@@ -17,8 +17,8 @@ import time
 import os
 from typing import Dict, List, Any, Optional, Union
 
-from scraper import scrape_auction_results
-from utils import validate_auction_data
+from backend.scraper import scrape_auction_results
+from backend.utils import validate_auction_data
 
 
 class TestScraperIntegration(unittest.TestCase):

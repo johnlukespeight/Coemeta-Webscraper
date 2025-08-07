@@ -26,10 +26,10 @@ from datetime import datetime
 import os
 from typing import Dict, List, Optional, Any, Union, Tuple
 
-from google_sheets import get_gspread_client, write_results, read_keywords
-from scraper import scrape_auction_results
-from database.database import get_database, close_database
-from utils import (
+from backend.google_sheets import get_gspread_client, write_results, read_keywords
+from backend.scraper import scrape_auction_results
+from backend.database.database import get_database, close_database
+from backend.utils import (
     setup_logging,
     sanitize_keyword,
     clean_text,
@@ -38,8 +38,13 @@ from utils import (
     extract_price,
     format_date,
 )
-from config import get_config
-from error_handling import handle_error, GoogleSheetsError, ScrapingError, DataError
+from backend.config import get_config
+from backend.error_handling import (
+    handle_error,
+    GoogleSheetsError,
+    ScrapingError,
+    DataError,
+)
 
 # Page configuration
 st.set_page_config(
@@ -1389,5 +1394,17 @@ def main() -> None:
     display_logs()
 
 
+def main_app():
+    """Main entry point for the Streamlit app."""
+    main()
+
+
 if __name__ == "__main__":
+    # Add project root to path to ensure imports work
+    import os
+    import sys
+
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    # Run the main app
     main()

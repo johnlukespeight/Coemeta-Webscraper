@@ -11,7 +11,7 @@ import unittest
 from typing import List, Dict, Any, Optional, Tuple
 import logging
 
-from utils import (
+from backend.utils import (
     sanitize_keyword,
     clean_text,
     extract_price,

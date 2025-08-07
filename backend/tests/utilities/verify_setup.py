@@ -9,9 +9,14 @@ import sys
 import json
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    ),
+)
 
-from config import validate_credentials, get_service_account_path, get_sheet_id
+from backend.config import validate_credentials, get_service_account_path, get_sheet_id
 
 
 def verify_service_account():
@@ -62,7 +67,7 @@ def verify_google_sheets_access():
     print("\n🔍 Verifying Google Sheets Access...")
 
     try:
-        from google_sheets import get_gspread_client
+        from backend.google_sheets import get_gspread_client
 
         service_account_path = get_service_account_path()
         client = get_gspread_client(service_account_path)
@@ -115,7 +120,7 @@ def verify_scraper():
     print("\n🔍 Verifying Scraper...")
 
     try:
-        from scraper import scrape_auction_results
+        from backend.scraper import scrape_auction_results
 
         # Test with a simple keyword
         results = scrape_auction_results("test", max_results=1)

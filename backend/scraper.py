@@ -83,7 +83,7 @@ class AntiDetectionScraper:
 
     Attributes:
         session (requests.Session): Standard requests session
-        scraper (Union[requests.Session, cloudscraper.CloudScraper]): 
+        scraper (Union[requests.Session, cloudscraper.CloudScraper]):
             Enhanced session with cloudscraper if available
         user_agents (List[str]): List of realistic user agent strings
     """
@@ -104,7 +104,7 @@ class AntiDetectionScraper:
 
     def get_random_user_agent(self) -> str:
         """Get a random user agent from the predefined list.
-        
+
         Randomly selects a user agent string from the predefined list
         to help avoid detection by varying the browser fingerprint.
 
@@ -121,7 +121,7 @@ class AntiDetectionScraper:
         and adds common cookies to avoid detection. This method configures
         a session with realistic browser headers and cookies to make the
         requests appear as if they are coming from a legitimate browser.
-        
+
         The headers include:
         - User-Agent: A randomly selected browser user agent
         - Accept: Common MIME types accepted by browsers
@@ -169,13 +169,13 @@ class AntiDetectionScraper:
         including disabling automation indicators and setting realistic preferences.
         This method implements multiple techniques to make the Chrome browser
         appear as a regular user browser rather than an automated one:
-        
+
         1. Disables automation-related flags and properties
         2. Configures realistic window size and viewport
         3. Sets a random user agent
         4. Disables features that might reveal automation
         5. Configures browser preferences to match typical user settings
-        
+
         These settings help bypass anti-bot systems that look for
         browser fingerprints and automation indicators.
 
@@ -223,17 +223,17 @@ class AntiDetectionScraper:
 
         Attempts to create an undetected Chrome driver with stealth options.
         Falls back to regular Chrome if undetected-chromedriver is not available.
-        
+
         This method uses the undetected-chromedriver library which provides
         advanced anti-detection capabilities by patching the ChromeDriver to
         avoid detection by anti-bot systems. It implements multiple techniques:
-        
+
         1. Uses undetected-chromedriver if available
         2. Configures stealth options to avoid detection
         3. Executes JavaScript to modify browser properties
         4. Sets realistic window size and viewport
         5. Configures browser preferences to match typical user settings
-        
+
         The method includes error handling and fallback mechanisms in case
         the undetected-chromedriver fails or is not available.
 
@@ -310,12 +310,12 @@ class AntiDetectionScraper:
         Detects various types of captcha challenges and attempts to solve them
         or provide manual intervention options. This method implements a
         comprehensive approach to captcha detection and handling:
-        
+
         1. Detects various types of captchas (reCAPTCHA, hCaptcha, etc.)
         2. Identifies captcha challenges using multiple selectors
         3. Attempts to solve simple captchas automatically
         4. Provides options for manual intervention when needed
-        
+
         The method searches for common captcha elements using CSS selectors
         and XPath expressions, and delegates to specialized methods for
         solving different types of captchas.
@@ -367,12 +367,12 @@ class AntiDetectionScraper:
         Tries to interact with captcha elements to solve them automatically.
         Falls back to manual intervention if automatic solving fails. This
         method implements techniques to solve common captcha challenges:
-        
+
         1. Switches to the captcha iframe if present
         2. Looks for and clicks on captcha checkboxes
         3. Waits for the captcha to be solved
         4. Switches back to the main content
-        
+
         The method is primarily designed to handle simple checkbox-based
         captchas. More complex captchas may require manual intervention.
 
@@ -418,11 +418,11 @@ class AntiDetectionScraper:
         Detects text-based captcha challenges and provides manual intervention
         options for the user to solve them. This method is designed to handle
         text-based captchas that require human input:
-        
+
         1. Looks for input fields that might be part of a captcha
         2. Prompts the user to manually solve the captcha when detected
         3. Waits for the user to complete the captcha challenge
-        
+
         This method is used when automatic captcha solving is not possible
         and human intervention is required.
 
@@ -460,21 +460,21 @@ class AntiDetectionScraper:
         Simulates natural human browsing behavior including scrolling
         patterns and reading pauses to avoid bot detection. This method
         implements realistic human-like interactions with the page:
-        
+
         1. Calculates page dimensions to determine scroll positions
         2. Implements natural scrolling patterns with varying speeds
         3. Adds random pauses to simulate reading behavior
         4. Uses randomization to make behavior less predictable
-        
+
         These behaviors help avoid detection by systems that look for
         patterns typical of automated browsing.
 
         Args:
             driver: The Chrome webdriver instance with the loaded page.
-            
+
         Returns:
             None
-            
+
         Note:
             This method catches and handles exceptions that may occur
             during the simulation of human behavior to ensure the
@@ -507,11 +507,11 @@ class AntiDetectionScraper:
         like captcha, robot detection, or access denied messages.
         This method examines the page content for signs that the
         website is blocking automated access:
-        
+
         1. Searches for common blocking keywords in the page source
         2. Detects various types of blocking messages and indicators
         3. Identifies access denied, rate limiting, and robot detection
-        
+
         The detection is based on a list of common blocking indicators
         that are frequently used by websites to block automated access.
 
@@ -549,7 +549,10 @@ class AntiDetectionScraper:
             return False
 
     def scrape_with_retry(
-        self, keyword: str, max_results: Optional[int] = None, max_retries: Optional[int] = None
+        self,
+        keyword: str,
+        max_results: Optional[int] = None,
+        max_retries: Optional[int] = None,
     ) -> List[Dict[str, str]]:
         """Scrape with retry logic and multiple methods.
 
@@ -557,11 +560,11 @@ class AntiDetectionScraper:
         fallback mechanisms and retry logic. This method implements a
         comprehensive approach to web scraping with multiple fallback
         mechanisms:
-        
+
         1. First tries undetected-chromedriver (if available)
         2. Falls back to regular Chrome with stealth options
         3. Finally attempts cloudscraper as a last resort
-        
+
         Between retry attempts, the method implements random delays
         to avoid detection by rate-limiting systems.
 
@@ -579,21 +582,21 @@ class AntiDetectionScraper:
                 - "Current price": Current price of the item
                 - "Auction end date": End date of the auction
                 - "Auction image / thumbnail URL (extra credit)": Image URL
-                
+
         Note:
             If all scraping methods fail, the method returns a list with
             a single dictionary containing error information.
         """
 
         # Get configuration if not provided
-        from config import get_config
-        
+        from backend.config import get_config
+
         if max_results is None:
             max_results = get_config().MAX_RESULTS
-            
+
         if max_retries is None:
             max_retries = get_config().SCRAPER_MAX_RETRIES
-            
+
         for attempt in range(max_retries):
             print(f"Attempt {attempt + 1}/{max_retries}")
 
@@ -605,15 +608,16 @@ class AntiDetectionScraper:
                     if results and len(results) > 1:  # More than just error message
                         return results
                 except Exception as e:
-                    from error_handling import handle_error, ScrapingError
+                    from backend.error_handling import handle_error, ScrapingError
+
                     handle_error(
                         error=e,
                         context="Undetected Chrome scraping failed",
                         reraise=False,
-                        error_type=ScrapingError
+                        error_type=ScrapingError,
                     )
-            finally:
-                driver.quit()
+                finally:
+                    driver.quit()
 
             # Try regular Chrome with stealth options
             driver = None
@@ -632,12 +636,13 @@ class AntiDetectionScraper:
                     return results
 
             except Exception as e:
-                from error_handling import handle_error, ScrapingError
+                from backend.error_handling import handle_error, ScrapingError
+
                 handle_error(
                     error=e,
                     context="Regular Chrome scraping failed",
                     reraise=False,
-                    error_type=ScrapingError
+                    error_type=ScrapingError,
                 )
             finally:
                 if driver:
@@ -649,12 +654,13 @@ class AntiDetectionScraper:
                 if results and len(results) > 1:
                     return results
             except Exception as e:
-                from error_handling import handle_error, NetworkError
+                from backend.error_handling import handle_error, NetworkError
+
                 handle_error(
                     error=e,
                     context="Cloudscraper fallback failed",
                     reraise=False,
-                    error_type=NetworkError
+                    error_type=NetworkError,
                 )
 
             # Wait before retry
@@ -682,12 +688,12 @@ class AntiDetectionScraper:
         anti-detection measures and human behavior simulation. This method
         implements a comprehensive approach to web scraping with Selenium,
         including:
-        
+
         1. Multiple search URL formats to handle different encoding methods
         2. Human behavior simulation (scrolling, pauses)
         3. Captcha detection and handling
         4. Content waiting and extraction
-        
+
         The method tries different URL formats to find the one that works
         best for the current website structure and implements various
         anti-detection measures to avoid being blocked.
@@ -705,7 +711,7 @@ class AntiDetectionScraper:
                 - "Current price": Current price of the item
                 - "Auction end date": End date of the auction
                 - "Auction image / thumbnail URL (extra credit)": Image URL
-                
+
         Note:
             If an error occurs during scraping, the method returns a list
             with a single dictionary containing error information.
@@ -793,16 +799,16 @@ class AntiDetectionScraper:
             return results
 
         except Exception as e:
-            from error_handling import handle_error, ScrapingError
-            
+            from backend.error_handling import handle_error, ScrapingError
+
             # Log the error but don't reraise to allow returning an error result
             handle_error(
                 error=e,
                 context=f"Error during scraping for '{keyword}'",
                 reraise=False,
-                error_type=ScrapingError
+                error_type=ScrapingError,
             )
-            
+
             # Return error result
             return [
                 {
@@ -822,12 +828,12 @@ class AntiDetectionScraper:
         extract auction results from the website. This method is used
         as a fallback when Selenium-based approaches fail and implements
         several techniques to avoid detection:
-        
+
         1. Enhanced session with realistic headers and cookies
         2. Multiple search URL formats to handle different encoding methods
         3. Random delays between requests
         4. User agent rotation
-        
+
         The method tries different URL formats sequentially until it finds
         one that returns valid results.
 
@@ -843,7 +849,7 @@ class AntiDetectionScraper:
                 - "Current price": Current price of the item
                 - "Auction end date": End date of the auction
                 - "Auction image / thumbnail URL (extra credit)": Image URL
-                
+
         Note:
             If all URL formats fail or an error occurs, the method returns
             a list with a single dictionary containing error information.
@@ -916,16 +922,16 @@ class AntiDetectionScraper:
             ]
 
         except Exception as e:
-            from error_handling import handle_error, NetworkError
-            
+            from backend.error_handling import handle_error, NetworkError
+
             # Log the error but don't reraise to allow returning an error result
             handle_error(
                 error=e,
                 context=f"Cloudscraper error for '{keyword}'",
                 reraise=False,
-                error_type=NetworkError
+                error_type=NetworkError,
             )
-            
+
             # Return error result
             return [
                 {
@@ -945,7 +951,7 @@ class AntiDetectionScraper:
         including descriptions, prices, dates, and image URLs. This method
         implements a robust parsing strategy that tries multiple CSS selectors
         to find product elements, even when the website structure changes.
-        
+
         The method uses a series of increasingly general selectors and
         filtering techniques to identify auction items while avoiding
         navigation elements, headers, footers, etc.
@@ -963,7 +969,7 @@ class AntiDetectionScraper:
                 - "Current price": Current price of the item
                 - "Auction end date": End date of the auction
                 - "Auction image / thumbnail URL (extra credit)": Image URL
-                
+
         Note:
             If no product elements are found or parsing fails, the method
             returns a list with a single dictionary containing error information.
@@ -1159,7 +1165,7 @@ def get_scraper() -> AntiDetectionScraper:
     and returns it for reuse across the application. This function implements
     the singleton pattern to ensure that only one scraper instance is created
     and reused throughout the application.
-    
+
     Using a singleton instance helps:
     1. Reduce resource usage by reusing the same session
     2. Maintain consistent behavior across multiple scraping operations
@@ -1175,19 +1181,21 @@ def get_scraper() -> AntiDetectionScraper:
     return _scraper_instance
 
 
-def scrape_auction_results(keyword: str, max_results: Optional[int] = None) -> List[Dict[str, str]]:
+def scrape_auction_results(
+    keyword: str, max_results: Optional[int] = None
+) -> List[Dict[str, str]]:
     """Enhanced scrape auction results with anti-detection and captcha handling.
 
     Main function to scrape auction results from shopgoodwill.com with
     comprehensive anti-detection measures and fallback mechanisms. This
     function serves as the primary entry point for scraping operations
     and provides a simple interface to the complex scraping functionality.
-    
+
     The function:
     1. Gets or creates a singleton scraper instance
     2. Delegates to the scraper's retry mechanism
     3. Returns the scraped auction results
-    
+
     This approach encapsulates the complexity of the scraping process
     while providing a simple interface for external code.
 
@@ -1204,14 +1212,14 @@ def scrape_auction_results(keyword: str, max_results: Optional[int] = None) -> L
             - "Auction end date": End date of the auction
             - "Auction image / thumbnail URL (extra credit)": Image URL
     """
-    from config import get_config
-    
+    from backend.config import get_config
+
     # Use configured max_results if not specified
     if max_results is None:
         max_results = get_config().MAX_RESULTS
-        
+
     # Use configured max_retries
     max_retries = get_config().SCRAPER_MAX_RETRIES
-    
+
     scraper = get_scraper()
     return scraper.scrape_with_retry(keyword, max_results, max_retries)

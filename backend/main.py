@@ -25,9 +25,9 @@ from pathlib import Path
 import logging
 import traceback
 
-from google_sheets import get_gspread_client, write_results, read_keywords
-from scraper import scrape_auction_results
-from utils import (
+from .google_sheets import get_gspread_client, write_results, read_keywords
+from .scraper import scrape_auction_results
+from .utils import (
     setup_logging,
     sanitize_keyword,
     clean_text,
@@ -36,7 +36,7 @@ from utils import (
     extract_price,
     format_date,
 )
-from config import (
+from .config import (
     get_config,
     get_service_account_path,
     get_sheet_id,
@@ -139,7 +139,7 @@ def clean_database() -> None:
         None
     """
     try:
-        from database.database import close_database
+        from .database.database import close_database
 
         close_database()
         print("Database connections closed.")
@@ -177,7 +177,15 @@ def run_streamlit() -> bool:
     clean_database()
 
     print("Starting Streamlit app...")
-    subprocess.run([sys.executable, "-m", "streamlit", "run", "streamlit_app.py"])
+    # Get the path to the frontend streamlit app
+    import os
+
+    frontend_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "frontend",
+        "streamlit_app.py",
+    )
+    subprocess.run([sys.executable, "-m", "streamlit", "run", frontend_path])
     return True
 
 
@@ -242,7 +250,11 @@ def main() -> None:
             print(f"\n🔍 Processing keyword: '{keyword}'")
             logger.info(f"Processing keyword: {keyword}")
 
-            from error_handling import handle_error, ScrapingError, GoogleSheetsError
+            from .error_handling import (
+                handle_error,
+                ScrapingError,
+                GoogleSheetsError,
+            )
 
             try:
                 # Scrape results for this keyword using configured max_results
@@ -285,7 +297,7 @@ def main() -> None:
         logger.info(f"Main execution completed. Total results: {total_results}")
 
     except Exception as e:
-        from error_handling import handle_error, ScraperError
+        from .error_handling import handle_error, ScraperError
 
         # Handle the error with our standardized error handling
         handle_error(
@@ -320,7 +332,7 @@ def run_tests() -> bool:
     print("🧪 Running Test Suite...")
     try:
         # Import and run the test suite
-        from tests.run_tests import run_all_tests
+        from .tests.run_tests import run_all_tests
 
         success = run_all_tests()
         return success
@@ -398,6 +410,11 @@ def handle_command(command: str) -> bool:
 
 
 if __name__ == "__main__":
+    # Add project root to path to ensure imports work
+    import os
+
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
     # Check for command line arguments
     if len(sys.argv) > 1:
         command = sys.argv[1]

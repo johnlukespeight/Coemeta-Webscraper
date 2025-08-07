@@ -21,6 +21,7 @@ Example:
 import logging
 import re
 import time
+import requests
 from datetime import datetime
 from typing import Dict, List, Optional, Union, Any, Callable
 from urllib.parse import quote_plus, urljoin, urlparse
@@ -297,7 +298,7 @@ def get_user_agent() -> str:
         >>> user_agent.startswith("Mozilla/5.0")
         True
     """
-    from config import get_config
+    from backend.config import get_config
 
     # Check if a custom user agent is configured
     custom_agent = get_config().SCRAPER_USER_AGENT
@@ -338,7 +339,7 @@ def add_delay(seconds: Optional[float] = None) -> None:
         >>> elapsed >= 0.5
         True
     """
-    from config import get_config
+    from backend.config import get_config
 
     if seconds is None:
         seconds = get_config().SCRAPER_DELAY
@@ -456,7 +457,7 @@ def handle_request_error(response: requests.Response, logger: logging.Logger) ->
         ...     print("Error handled")
         Error handled
     """
-    from error_handling import handle_request_error as new_handle_request_error
+    from backend.error_handling import handle_request_error as new_handle_request_error
 
     # Use the new error handling function with a generic context
     new_handle_request_error(

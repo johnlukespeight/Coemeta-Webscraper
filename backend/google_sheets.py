@@ -20,7 +20,7 @@ Example:
 from typing import List, Dict, Any, Optional
 import gspread
 from gspread.client import Client
-from gspread.models import Worksheet
+from gspread import Worksheet
 
 
 def get_gspread_client(service_account_path: str) -> Client:
@@ -92,9 +92,9 @@ def write_results(
 ) -> None:
     """Write search results to the 'RESULTS TEMPLATE' tab of the specified Google Sheet.
 
-    Creates or clears the 'RESULTS TEMPLATE' worksheet in the specified Google Sheet
-    and writes the search results to it. The function also attempts to render
-    image URLs as actual images in the spreadsheet.
+    Appends new search results to the 'RESULTS TEMPLATE' worksheet in the specified Google Sheet.
+    If the worksheet doesn't exist, it creates it with appropriate headers.
+    The function also attempts to render image URLs as actual images in the spreadsheet.
 
     The worksheet will be structured with the following columns:
     - Keyword: The search keyword used
@@ -135,14 +135,24 @@ def write_results(
     # Try to open the 'RESULTS TEMPLATE' worksheet, or create it if it doesn't exist
     try:
         worksheet = sheet.worksheet("RESULTS TEMPLATE")
-        worksheet.clear()
+        # Check if the worksheet has headers - if not, add them
+        if worksheet.row_count == 0 or worksheet.cell(1, 1).value == "":
+            worksheet.update("A1", [columns])
     except gspread.exceptions.WorksheetNotFound:
         worksheet = sheet.add_worksheet(
             title="RESULTS TEMPLATE", rows="100", cols=str(len(columns))
         )
+        # Add headers to the new worksheet
+        worksheet.update("A1", [columns])
 
-    # Prepare the data: first row is headers, then each row is a list of values
-    data = [columns]
+    # Get the current row count to determine where to append new data
+    existing_data = worksheet.get_all_values()
+    next_row = (
+        len(existing_data) + 1 if existing_data else 2
+    )  # Start from row 2 if there are headers, or 1 if empty
+
+    # Prepare the data for appending: each row is a list of values
+    data = []
     for row in results:
         # Ensure the 'Keyword' column is filled with the provided keyword
         row_data = [
@@ -154,12 +164,15 @@ def write_results(
         ]
         data.append(row_data)
 
-    # Write the data to the worksheet starting at A1
-    worksheet.update("A1", data)
+    # Append the data to the worksheet starting at the next available row
+    if data:  # Only update if we have data to add
+        append_range = f"A{next_row}"
+        worksheet.update(append_range, data)
+        print(f"✅ Added {len(data)} rows starting at row {next_row}")
 
     # Add images to column E (5th column) if image URLs are available
     try:
-        for i, row in enumerate(results, start=2):  # Start from row 2 (after headers)
+        for i, row in enumerate(results, start=next_row):  # Start from the next row
             image_url = row.get("Auction image / thumbnail URL (extra credit)", "")
             if image_url and image_url.strip():
                 try:
